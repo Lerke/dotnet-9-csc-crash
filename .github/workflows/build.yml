@@ -1,0 +1,34 @@
+name: build
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        dotnet: [ '8.x', '9.x' ]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup .NET Core ${{ matrix.dotnet }}
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ matrix.dotnet }}
+
+      - name: Install dependencies
+        if: ${{ matrix.dotnet == '8.x' }}
+        run: dotnet restore -p:TargetFramework=net8.0
+        
+      - name: Install dependencies
+        if: ${{ matrix.dotnet == '9.x' }}
+        run: dotnet restore -p:TargetFramework=net9.0
+
+      - name: Build .NET 8
+        if: ${{ matrix.dotnet == '8.x' }} 
+        run: dotnet build -v diag -f net8.0 --configuration Release --no-restore
+        
+      - name: Build .NET 9
+        if: ${{ matrix.dotnet == '9.x' }}
+        run: dotnet build -v diag -f net9.0 --configuration Release --no-restore
